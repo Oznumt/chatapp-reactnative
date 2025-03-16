@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   FlatList,
   StyleSheet,
+  Alert,
 } from "react-native";
 import { useState, useEffect, useRef } from "react";
 import {
@@ -17,10 +18,12 @@ import {
   updateDoc,
   doc,
   DocumentData,
+  deleteDoc,
 } from "firebase/firestore";
 import { auth, db } from "../firebaseConfig";
 import { MaterialIcons } from "@expo/vector-icons";
 import moment from "moment";
+
 
 interface Message {
   id: string;
@@ -36,7 +39,6 @@ export default function Chat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [message, setMessage] = useState("");
   const flatListRef = useRef<FlatList<Message>>(null);
-  const currentDate = moment().format("DD/MM/YYYY");
 
   const chatId = auth.currentUser?.uid && receiverId
     ? [auth.currentUser.uid, receiverId].sort().join("_")
@@ -83,81 +85,123 @@ export default function Chat() {
     }
   };
 
+  const deleteMessage = async (messageId: string) => {
+    if (!chatId || !auth.currentUser) return;
+  
+    try {
+      await deleteDoc(doc(db, `chats/${chatId}/messages`, messageId));
+    } catch (error) {
+      console.error("Mesaj silme başarısız:", error);
+    }
+  };
+
   const sendMessage = async () => {
     if (!message.trim() || !chatId || !auth.currentUser) return;
 
-    await addDoc(collection(db, `chats/${chatId}/messages`), {
-      text: message,
-      sender: auth.currentUser.uid,
-      timestamp: new Date(),
-      status: "sent",
-    });
-
+    const messageToSend = message; 
     setMessage("");
+        await addDoc(collection(db, `chats/${chatId}/messages`), {
+            text: messageToSend,
+            sender: auth.currentUser.uid,
+            timestamp: new Date(),
+            status: "sent",
+        });
   };
 
-  return (
-    <View style={styles.container}>
-      
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <MaterialIcons name="arrow-back" size={24} color="#1E90FF" />
-        </TouchableOpacity>
-        <Text style={styles.chatTitle}>{receiverName}</Text>
-      </View>
+    return (
+  <View style={styles.container}>
 
-      <Text style={styles.dateHeader}>{currentDate}</Text>
-
-      <FlatList
-        ref={flatListRef}
-        data={messages}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.chatContent}
-        renderItem={({ item }) => (
-          <View
-            style={[
-              item.sender === auth.currentUser?.uid ? styles.myMessageContainer : styles.otherMessageContainer,
-            ]}
-          >
-            <Text style={item.sender === auth.currentUser?.uid ? styles.myMessage : styles.otherMessage}>
-              {item.text}
-            </Text>
-            <View style={styles.messageInfo}>
-              {item.sender === auth.currentUser?.uid && (
-                <Text style={[styles.statusText, item.status === "read" ? styles.readText : styles.sentText]}>
-                  {item.status}
-                </Text>
-              )}
-              <Text style={[styles.timestamp, item.sender !== auth.currentUser?.uid && styles.timestampOther]}>
-                {moment(item.timestamp?.toDate()).format("HH:mm")}
-              </Text>
-            </View>
-          </View>
-        )}
-        
-      />
-
-      <View style={styles.inputContainer}>
-        <TouchableOpacity>
-          <MaterialIcons name="image" size={28} color="#1E90FF" />
-        </TouchableOpacity>
-        <TouchableOpacity>
-          <MaterialIcons name="attach-file" size={28} color="#1E90FF" />
-        </TouchableOpacity>
-        <View style={styles.inputWrapper}>
-          <TextInput
-            style={styles.input}
-            placeholder="Type a message..."
-            value={message}
-            onChangeText={setMessage}
-          />
-        </View>
-        <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
-          <MaterialIcons name="send" size={28} color="white" />
-        </TouchableOpacity>
-      </View>
+    <View style={styles.header}>
+      <TouchableOpacity onPress={() => router.back()}>
+        <MaterialIcons name="arrow-back" size={24} color="#1E90FF" />
+      </TouchableOpacity>
+      <Text style={styles.chatTitle}>{receiverName}</Text>
     </View>
-  );
+
+    <FlatList
+      ref={flatListRef}
+      data={messages}
+      keyExtractor={(item) => item.id}
+      contentContainerStyle={styles.chatContent}
+      onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+      onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
+      renderItem={({ item, index }) => {
+        const messageDate = moment(item.timestamp?.toDate()).format("DD/MM/YYYY");
+        const prevMessageDate =
+          index > 0 ? moment(messages[index - 1].timestamp?.toDate()).format("DD/MM/YYYY") : null;
+
+        return (
+          <>
+            
+            {messageDate !== prevMessageDate && (
+              <Text style={styles.dateHeader}>{messageDate}</Text>
+            )}
+
+            <TouchableOpacity
+              onLongPress={() => {
+                if (item.sender === auth.currentUser?.uid) {
+                  Alert.alert(
+                    "Delete Message",
+                    "Are you sure you want to delete this message?",
+                    [
+                      { text: "Cancel", style: "cancel" },
+                      { text: "Delete", style: "destructive", onPress: () => deleteMessage(item.id) },
+                    ]
+                  );
+                }
+              }}
+            >
+              <View
+                style={[
+                  item.sender === auth.currentUser?.uid
+                    ? styles.myMessageContainer
+                    : styles.otherMessageContainer,
+                ]}
+              >
+                <Text style={item.sender === auth.currentUser?.uid ? styles.myMessage : styles.otherMessage}>
+                  {item.text}
+                </Text>
+
+                <View style={styles.messageInfo}>
+                  {item.sender === auth.currentUser?.uid && (
+                    <Text style={[styles.statusText, item.status === "read" ? styles.readText : styles.sentText]}>
+                      {item.status}
+                    </Text>
+                  )}
+                  <Text style={[styles.timestamp, item.sender !== auth.currentUser?.uid && styles.timestampOther]}>
+                    {moment(item.timestamp?.toDate()).format("HH:mm")}
+                  </Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          </>
+        );
+      }}
+    />
+
+    <View style={styles.inputContainer}>
+      <TouchableOpacity>
+        <MaterialIcons name="image" size={28} color="#1E90FF" />
+      </TouchableOpacity>
+      <TouchableOpacity>
+        <MaterialIcons name="attach-file" size={28} color="#1E90FF" />
+      </TouchableOpacity>
+      <View style={styles.inputWrapper}>
+        <TextInput
+          style={styles.input}
+          placeholder="Type a message..."
+          value={message}
+          onChangeText={setMessage}
+        />
+      </View>
+      <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
+        <MaterialIcons name="send" size={28} color="white" />
+      </TouchableOpacity>
+    </View>
+
+  </View>
+);
+
 }
 
 const styles = StyleSheet.create({
@@ -261,6 +305,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#1E90FF",
     padding: 10,
     borderRadius: 50,
+  },
+  deleteButton: {
+    marginLeft: 10,
+    padding: 5,
+    backgroundColor: "red",
+    borderRadius: 5,
   },
 });
 
