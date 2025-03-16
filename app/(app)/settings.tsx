@@ -1,58 +1,91 @@
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, StyleSheet, TouchableOpacity, Text, Alert } from "react-native";
 import { useRouter } from "expo-router";
-import { MaterialIcons } from "@expo/vector-icons";
+import { auth, db } from "../../firebaseConfig";
+import { deleteUser } from "firebase/auth";
+import { doc, deleteDoc } from "firebase/firestore";
 
 export default function Settings() {
   const router = useRouter();
 
+  const handleDeleteAccount = async () => {
+    const user = auth.currentUser; 
+
+    if (!user) {
+      Alert.alert("Error", "No authenticated user found.");
+      return;
+    }
+
+    Alert.alert(
+      "Delete Account",
+      "Are you sure you want to delete your account? This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const userDocRef = doc(db, "users", user.uid);
+              await deleteDoc(userDocRef);
+              await deleteUser(user); 
+              router.replace("/(auth)");
+            } catch (error) {
+              Alert.alert("Error", "Failed to delete account.");
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <View style={styles.container}>
-      {/* Başlık */}
-      <Text style={styles.title}>Ayarlar</Text>
-
-      {/* Engellenen Kullanıcılar Butonu */}
-      <TouchableOpacity 
-        style={styles.button} 
-        onPress={() => {
-          console.log("Engellenen Kullanıcılar butonuna basıldı!"); // Konsola mesaj bas
-          router.push("/blockedUsers"); // Sayfaya yönlendir
-        }}
-        activeOpacity={0.7} // Basılma efekti için
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => router.push("/blockedUsers")}
       >
-        <MaterialIcons name="block" size={24} color="white" />
-        <Text style={styles.buttonText}>Engellenen Kullanıcılar</Text>
+        <Text style={styles.buttonText}>Blocked Users</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAccount}>
+        <Text style={styles.deleteButtonText}>Delete Account</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
-// 📌 Stil Tanımları
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: "flex-start",
     alignItems: "center",
     backgroundColor: "#F5F5F5",
-    paddingHorizontal: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 20,
+    padding: 20,
+    paddingTop: 40, 
   },
   button: {
-    flexDirection: "row",
+    backgroundColor: "#1E90FF",
+    padding: 16,
+    borderRadius: 12,
+    width: "100%", 
     alignItems: "center",
-    backgroundColor: "#FF3B30", // Kırmızı buton
-    padding: 12,
-    borderRadius: 10,
-    marginTop: 10,
+    marginBottom: 15,
   },
   buttonText: {
-    color: "white",
+    color: "#FFF",
     fontSize: 16,
     fontWeight: "bold",
-    marginLeft: 10,
+  },
+  deleteButton: {
+    backgroundColor: "#FF3B30",
+    padding: 16,
+    borderRadius: 12,
+    width: "100%", 
+    alignItems: "center",
+  },
+  deleteButtonText: {
+    color: "#FFF",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });

@@ -21,7 +21,7 @@ export default function SignUp() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Kullanıcıyı Firestore veritabanına ekleyelim
+      
       await setDoc(doc(db, "users", user.uid), {
         name,
         email,

@@ -109,7 +109,7 @@ export default function Profile() {
 
   return (
     <View style={styles.container}>
-      {/* Profil Fotoğrafı */}
+      
       <TouchableOpacity onPress={pickImage} style={styles.profileImageContainer}>
         {loading ? (
           <ActivityIndicator size="large" color="#1E90FF" />
@@ -122,14 +122,12 @@ export default function Profile() {
         )}
       </TouchableOpacity>
 
-      {/* Profil Resmini Kaldır Butonu */}
       {photoURL && (
         <TouchableOpacity onPress={removeProfileImage}>
           <Text style={styles.removeText}>Remove Profile Image</Text>
         </TouchableOpacity>
       )}
 
-      {/* İsim Girişi */}
       <TextInput
         style={styles.input}
         placeholder="Enter your name"
@@ -137,7 +135,6 @@ export default function Profile() {
         onChangeText={setName}
       />
 
-      {/* Kaydet Butonu */}
       <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
         <Text style={styles.saveText}>Save</Text>
       </TouchableOpacity>

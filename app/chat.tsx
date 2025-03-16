@@ -98,7 +98,7 @@ export default function Chat() {
 
   return (
     <View style={styles.container}>
-      {/* 🔙 Geri Dönüş ve Başlık */}
+      
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
           <MaterialIcons name="arrow-back" size={24} color="#1E90FF" />
@@ -106,10 +106,8 @@ export default function Chat() {
         <Text style={styles.chatTitle}>{receiverName}</Text>
       </View>
 
-      {/* 📅 Dinamik Tarih Başlığı */}
       <Text style={styles.dateHeader}>{currentDate}</Text>
 
-      {/* 📩 Mesajlar Listesi */}
       <FlatList
         ref={flatListRef}
         data={messages}
@@ -139,7 +137,6 @@ export default function Chat() {
         
       />
 
-      {/* 📝 Mesaj Gönderme Alanı */}
       <View style={styles.inputContainer}>
         <TouchableOpacity>
           <MaterialIcons name="image" size={28} color="#1E90FF" />
@@ -163,7 +160,6 @@ export default function Chat() {
   );
 }
 
-// 📌 Gerekli Stiller
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -189,23 +185,23 @@ const styles = StyleSheet.create({
     color: "#666",
   },
   chatContent: {
-    paddingHorizontal: 20, // 🔹 Mesajları kenarlardan biraz uzaklaştır
+    paddingHorizontal: 20, 
   },
   myMessageContainer: {
     alignSelf: "flex-end",
     backgroundColor: "#1E90FF",
     borderRadius: 12,
-    marginVertical: 5, // 🔹 Mesajlar arasına boşluk ekledik
+    marginVertical: 5, 
     padding: 10,
-    maxWidth: "75%", // 🔹 Mesajların genişliği artırıldı
+    maxWidth: "75%", 
   },
   otherMessageContainer: {
     alignSelf: "flex-start",
     backgroundColor: "#F1F1F1",
     borderRadius: 12,
-    marginVertical: 5, // 🔹 Mesajlar arasına boşluk ekledik
+    marginVertical: 5, 
     padding: 10,
-    maxWidth: "75%", // 🔹 Mesajların genişliği artırıldı
+    maxWidth: "75%", 
   },
   myMessage: {
     color: "#FFFFFF",
@@ -227,10 +223,10 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   sentText: {
-    color: "#FFA500", // 🟡 Turuncu: Mesaj gönderildi ama okunmadı
+    color: "#FFA500", 
   },
   readText: {
-    color: "#008000", // ✅ Yeşil: Mesaj okundu
+    color: "#008000", 
   },
   timestamp: {
     fontSize: 12,
@@ -239,7 +235,7 @@ const styles = StyleSheet.create({
     opacity: 0.8,
   },
   timestampOther: {
-    color: "#666", // 🔹 Gelen mesajların saati daha okunur hale getirildi
+    color: "#666", 
   },
   inputContainer: {
     flexDirection: "row",

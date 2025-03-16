@@ -10,9 +10,9 @@ export default function RootLayout() {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setIsAuthenticated(!!user);
       if (!user) {
-        router.replace("/(auth)"); // ✅ Giriş yapmamışsa /auth yönlendirmesi
+        router.replace("/(auth)");
       } else {
-        router.replace("/(app)/home"); // ✅ Giriş yapmışsa ana sayfaya yönlendirme
+        router.replace("/(app)/home");
       }
     });
 

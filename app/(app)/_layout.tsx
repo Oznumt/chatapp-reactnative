@@ -67,7 +67,6 @@ export default function AppLayout() {
   );
 }
 
-//  **Beyaz Tema için Özel Drawer Tasarımı**
 function CustomDrawerContent(props: DrawerContentComponentProps) {
   const router = useRouter();
 
@@ -78,18 +77,14 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
 
   return (
     <DrawerContentScrollView {...props} contentContainerStyle={styles.drawerContainer}>
-      {/* Üst Kısım (Mesaj İkonu) */}
+      
       <View style={styles.header}>
         <MaterialIcons name="chat" size={40} color="#1E90FF" />
       </View>
-
-      {/* Ayırıcı Çizgi */}
       <View style={styles.separator} />
-
-      {/* Drawer Menü İçeriği */}
+      
       <DrawerItemList {...props} />
 
-      {/* Logout Butonu */}
       <View style={styles.logoutContainer}>
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <MaterialIcons name="logout" size={24} color="white" />
@@ -100,7 +95,6 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
   );
 }
 
-//  **Stil Tanımlamaları**
 const styles = StyleSheet.create({
   drawerContainer: {
     flex: 1,
